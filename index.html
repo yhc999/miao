@@ -1,1 +1,52 @@
-<h1>foo bar</h1>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>仓库文件列表</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont;
+      padding: 32px;
+    }
+    ul {
+      line-height: 1.8;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>File list.</h1>
+  <ul id="file-list"></ul>
+  <p id="error" class="error"></p>
+
+  <script>
+    const owner = "yhc999";
+    const repo = "miao";
+
+    fetch(`https://api.github.com/repos/${owner}/${repo}/contents/`)
+      .then(res => res.json())
+      .then(data => {
+        if (!Array.isArray(data)) {
+          throw new Error(data.message || "GitHub API 返回异常");
+        }
+
+        const ul = document.getElementById("file-list");
+        data.forEach(file => {
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+          a.textContent = file.name;
+          a.href = "./" + file.path;
+          li.appendChild(a);
+          ul.appendChild(li);
+        });
+      })
+      .catch(err => {
+        document.getElementById("error").textContent =
+          "加载失败（可能触发了 GitHub API 匿名限流，请稍后再试）";
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
