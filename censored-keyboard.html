@@ -1,0 +1,49 @@
+<textarea id="censored"></textarea>
+
+<style>
+  textarea {
+    font-size: x-large;
+    width: 50vw;
+    height: 50vh;
+  }
+</style>
+<script>
+  let textarea = document.querySelector("#censored");
+  textarea.addEventListener("keydown", (event) => {
+    if ("qwx".includes(event.key)) {
+      console.log("not allowed!")
+      event.preventDefault();
+    }
+  });
+
+  // textarea.addEventListener("keypress", (event) => {
+  //   if (/[qwx]/i.test(String.fromCharCode(event.charCode))) {
+  //     event.preventDefault();
+  //   }
+  // });
+
+  textarea.addEventListener("paste", event => {
+    event.preventDefault();
+    let pasteData = event.clipboardData.getData("text/plain");
+    pasteData = pasteData.replace(/[WQXwqx]/g, "*");  
+    let from = textarea.selectionStart;
+    let to = textarea.selectionEnd;
+    textarea.value = textarea.value.slice(0, from) + pasteData + textarea.value.slice(to);
+    textarea.selectionStart = textarea.selectionEnd = from + pasteData.length;
+  });
+
+  let valueDescriptor = Object.getOwnPropertyDescriptor(textarea.__proto__, "value");
+
+  Object.defineProperty(textarea, "value", {
+    get: function() {
+      return valueDescriptor.get.call(textarea);
+    },
+    set: function(val) {
+      valueDescriptor.set.call(textarea, val.replace(/[WQXwqx]/g, '*'));
+    }
+  });
+
+  textarea.addEventListener("drop", event => {
+    event.preventDefault();
+  });
+</script> 

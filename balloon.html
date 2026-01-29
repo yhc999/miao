@@ -1,0 +1,29 @@
+<p>🎈</p>
+
+<script>
+  let balloon = document.querySelector("p");
+
+  function arrowUp(event) {
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      let newSize = parseFloat(window.getComputedStyle(balloon).fontSize) * 1.1;
+      if (newSize < 800) {
+        balloon.style.fontSize = newSize + 'px';
+      } else {
+        balloon.textContent = '💥';
+        window.removeEventListener("keydown", arrowUp);
+        window.removeEventListener("keydown", arrowDown);
+      }
+    }
+  }
+
+  function arrowDown(event) {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      balloon.style.fontSize = parseFloat(window.getComputedStyle(balloon).fontSize) * 0.9 + 'px';
+    }
+  }
+
+  window.addEventListener("keydown", arrowUp);
+  window.addEventListener("keydown", arrowDown);
+</script>

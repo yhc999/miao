@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conway's Game of Life</title>
+  <style>
+    #grid {
+      display: grid;
+      height: 800px;
+      width: 800px;
+      grid-template-columns: repeat(100, 1fr);
+      grid-template-rows: repeat(100, 1fr);
+      gap: 1px;
+      background: #444;
+      padding: 1px;
+    }
+
+    #grid>span {
+      background: #fff;
+    }
+
+    #grid>span.alive {
+      background: #000;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="grid"></div>
+  <br>
+  <button id="next">Next generation</button>
+  <button id="run">Start</button>
+
+  <script>
+    // function randInt(min, max) {
+    //   return Math.floor(Math.random() * (max - min + 1)) + min;
+    // }
+
+    const grid = document.querySelector("#grid");
+    const N = 100;
+    let isLives = Array(N * N).fill(false); // 记录细胞的状态 true: 存活 false: 死亡
+
+    for (let i = 0; i < N * N; i++) { // Init Dom
+      let span = document.createElement("span");
+      span.id = i;
+      grid.appendChild(span);
+    }
+
+    grid.addEventListener("click", event => {
+      if (event.target.className === "alive") {
+        event.target.classList.remove("alive");
+      } else {
+        event.target.className = "alive";
+      }
+      let index = Number(event.target.id);
+      isLives[index] = !isLives[index];
+    });
+
+    function get(row, col) {
+      return isLives[row * N + col];
+    }
+
+    const nextBtn = document.querySelector("#next");
+
+    function updateState() {
+      function getNextStates(isLives) {
+        let nextStates = Array(N * N).fill(false);
+        for (let index = 0; index < N * N; index += 1) {
+          let row = Math.trunc(index / N);
+          let col = index % N;
+
+          let dRow = [-1, 0, 1];  // 偏移量
+          let dCol = [-1, 0, 1];
+          let count = 0;
+          for (let i = 0; i < 3; i++) { // 统计细胞周围存活细胞数量
+            for (let j = 0; j < 3; j++) {
+              let r = row + dRow[i];
+              let c = col + dCol[j];
+
+              if (r < 0 || r >= N || c < 0 || c >= N || (r == row && c == col))
+                continue;
+              if (get(r, c))
+                count += 1;
+            }
+          }
+
+          if (isLives[index]) { // 判断活细胞下个状态
+            if (count < 2 || count > 3) {
+              nextStates[index] = false;
+            } else {
+              nextStates[index] = true;
+            }
+          } else {  // 判断死细胞下个状态
+            if (count === 3) {
+              nextStates[index] = true;
+            }
+          }
+        }
+
+        return nextStates;
+      }
+
+      isLives = getNextStates(isLives); // update states
+      for (let i = 0; i < N * N; i++) {
+        let span = document.getElementById(i);
+        let newState = isLives[i] ? "alive" : "";
+        if (span.className != newState) {
+          span.className = newState;
+        }
+      }
+    }
+
+    nextBtn.addEventListener("click", updateState);
+
+    let run = document.getElementById("run");
+
+    function start() {
+      updateState();
+      timer = setTimeout(start, 500);
+    }
+
+    let timer = null;
+
+    run.addEventListener("click", () => {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+        run.textContent = "Start";
+      } else {
+        run.textContent = "Stop";
+        start();
+      }
+    });
+    
+  </script>
+</body>
+
+</html>

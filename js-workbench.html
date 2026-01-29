@@ -1,0 +1,28 @@
+<textarea id="code">console.log(1);</textarea>
+<button id="button">Run</button>
+<pre id="output"></pre>
+
+<script>
+  const code = document.querySelector("#code");
+  const button = document.querySelector("#button");
+  const output = document.querySelector("#output");
+
+  button.addEventListener("click", () => {
+    output.textContent = ""; // 清空旧输出
+
+    try {
+      const customConsole = {
+        log: (...args) => {
+          output.textContent += args.join(" ") + "\n";
+        }
+      };
+
+      // 让 eval 能使用 customConsole
+      const fn = new Function("console", code.value);
+      fn(customConsole);
+
+    } catch (error) {
+      output.textContent += error.message;
+    }
+  });
+</script>

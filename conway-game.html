@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conway's Game of Life</title>
+</head>
+
+<body>
+  <div id="stage">
+  </div>
+  <button id="next">Next generation</button>
+  <button id="start">Start</button>
+  <button id="random">Random</button>
+
+  <script>
+    class Conway {
+      constructor(height, width) {
+        this.height = height;
+        this.width = width;
+        this.world = new Array(height).fill(0).map(item => new Array(width).fill(0));
+      }
+
+      init() {
+        this.render();
+      }
+
+      randomGenerateWorld(scale) {
+        for (let i = 0; i < this.height; i++) {
+          for (let j = 0; j < this.width; j++) {
+            if (Math.random() < scale) {
+              this.world[i][j] = 1;
+            } else {
+              this.world[i][j] = 0;
+            }
+          }
+        }
+        this.render();
+      }
+
+      set(row, col, val) {
+        this.world[row][col] = val;
+      }
+
+      step() {
+        let newWorld = new Array(this.height).fill(0).map(item => new Array(this.width).fill(0));
+        for (let row = 0; row < this.height; row += 1) {
+          for (let col = 0; col < this.width; col += 1) {
+            let count = 0;
+
+            for (let i = row - 1; i <= row + 1; i++) {
+              for (let j = col - 1; j <= col + 1; j++) {
+                if (i >= 0 && i < this.height && j >= 0 && j < this.width) {
+                  count += this.world[i][j];
+                }
+              }
+            }
+
+            count -= this.world[row][col];
+
+            if (this.world[row][col] === 1) {
+              if (count === 2 || count === 3)
+                newWorld[row][col] = 1;
+            } else {
+              if (count === 3)
+                newWorld[row][col] = 1;
+            }
+          }
+        }
+        this.world = newWorld;
+        this.render();
+      }
+
+      render() {
+        stage.innerHTML = "";
+        for (let i = 0; i < this.height; i++) {
+          for (let j = 0; j < this.width; j++) {
+            let checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.dataset.row = i;
+            checkbox.dataset.col = j;
+            if (this.world[i][j] === 1) {
+              checkbox.checked = true;
+            }
+            stage.appendChild(checkbox);
+          }
+          stage.appendChild(document.createElement("br"));
+        }
+      }
+    }
+
+    const game = new Conway(40, 80);
+    game.init();
+    next.onclick = () => {
+      game.step();
+    };
+    random.onclick = () => {
+      function isNumber(str) {
+        return str !== '' && Number.isFinite(Number(str));
+      }
+      let scale = 0.5;
+      do {
+        scale = prompt("Input the probability of generating cells [0-1]");
+      } while (!isNumber(scale));
+      game.randomGenerateWorld(Number(scale));
+    };
+    stage.onclick = (event) => {
+      if (event.target.matches("input")) {
+        game.set(Number(event.target.dataset.row), Number(event.target.dataset.col), event.target.checked ? 1 : 0);
+      }
+    };
+
+    let timer = null;
+
+    function loop() {
+      game.step();
+      timer = setTimeout(loop, 500);
+    }
+
+    start.onclick = () => {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+        start.textContent = "Start";
+      } else {
+        start.textContent = "Stop";
+        loop();
+      }
+    };
+  </script>
+</body>
+
+</html>
